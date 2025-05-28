@@ -1,0 +1,78 @@
+version: v2beta1
+name: ml-cluster-test
+vars:
+  IMAGE_NAME:
+    source: env
+    #default: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    default: pytorch/pytorch:2.4.0-cuda12.1-cudnn9-runtime
+    #default: nvidia/cuda:12.4.0-runtime-ubuntu22.04
+deployments:
+  app:
+    helm:
+      # If chart: is omitted, component chart will be used
+      values:
+        containers:
+          - image: "${IMAGE_NAME}"
+            resources:
+              limits:
+                nvidia.com/gpu: "1"
+              requests:
+                nvidia.com/gpu: "1"
+        nodeSelector:
+          node.kubernetes.io/instance-type: g6.2xlarge
+        tolerations:
+        - effect: NoSchedule
+          key: nvidia.com/gpu
+          operator: Exists
+dev:
+  app:
+    devImage: "${IMAGE_NAME}"
+    #####mount home
+    #persistPaths:
+    #- path: /jupyterhub/home
+    #  volumePath: "."
+    #persistenceOptions:
+    #  name: efs-persist
+    #  storageClassName: efs-sc
+    #######
+    persistPaths:
+    - path: /jupyterhub/shared
+      volumePath: "."
+    persistenceOptions:
+      name: efs-persist-shared 
+      storageClassName: efs-sc
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
+    imageSelector: "${IMAGE_NAME}"
+    sync:
+    # Map the local path "./" (= local working directory / project root) to the container path "/app"
+    - path: ./:/app
+    - path: "${DEVSPACE_USER_HOME}/.kube/config:/root/.kube/config"
+    - path: "${DEVSPACE_USER_HOME}/.aws:/root/.aws"
+    terminal:
+      command: /app/devspace_start.sh
+    attach: {}
+    # Inject a lightweight SSH server into the container (so your IDE can connect to the remote dev env)
+    ssh:
+      enabled: true
+    # Make the following commands from my local machine available inside the dev container
+    proxyCommands:
+      - gitCredentials: true
+      - command: git
+      - command: devspace
+      - command: kubectl
+      - command: helm
+    open:
+      - url: http://localhost:8090
+# Define the flow when what is started
+pipelines:
+  dev: |-
+    # Deploy the application and then start dev
+    run_default_pipeline dev
+
+    # Open VSCode as soon as we are done
+    cursor --folder-uri vscode-remote://ssh-remote+app.ml-cluster-test.devspace/app
+    #code --folder-uri vscode-remote://ssh-remote+app.ml-cluster-test.devspace/app

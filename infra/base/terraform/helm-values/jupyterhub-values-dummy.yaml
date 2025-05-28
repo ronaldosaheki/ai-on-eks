@@ -110,14 +110,14 @@ singleuser:
         extra_resource_limits:
           aws.amazon.com/neuron: "1"
         cmd: null
-    - display_name: Data Science (GPU + Time-Slicing - G5)
+    - display_name: Data Science (1 GPU + Time-Slicing)
       default: true
-      description: "GPU Time-Slicing with Single GPU VMs (G5 2x, 4x, 8x, 16x) | nvidia.com/gpu: 1 | Karpenter AutoScaling"
+      description: "GPU Time-Slicing with Single GPU VMs (G5/G6/G6e 2x, 4x, 8x) | nvidia.com/gpu: 1 | Karpenter AutoScaling"
       kubespawner_override:
         # namespace: data-team-a
         image: cschranz/gpu-jupyter:v1.6_cuda-11.8_ubuntu-22.04_python-only
         node_selector:
-          NodePool: gpu-ts # TIME-SLICING: Use this config with time-slicing mode
+          karpenter.k8s.aws/instance-gpu-count: "1"
         tolerations:
           - key: "nvidia.com/gpu"
             operator: "Exists"
@@ -128,6 +128,44 @@ singleuser:
         mem_limit: 4G
         cpu_guarantee: 2
         mem_guarantee: 4G
+        cmd: "start-singleuser.sh"
+    - display_name: Data Science (4 GPUs)
+      default: true
+      description: "GPU VMs with 4 GPUs (g5/g6/G6e 12x 16x 24x) | nvidia.com/gpu: 1 | Karpenter AutoScaling"
+      kubespawner_override:
+        # namespace: data-team-a
+        image: cschranz/gpu-jupyter:v1.6_cuda-11.8_ubuntu-22.04_python-only
+        node_selector:
+          karpenter.k8s.aws/instance-gpu-count: "4"
+        tolerations:
+          - key: "nvidia.com/gpu"
+            operator: "Exists"
+            effect: "NoSchedule"
+        extra_resource_limits:
+          nvidia.com/gpu: "4" # TIME-SLICING: Use a slice of GPU using time-slicing mode
+        cpu_limit: 20
+        mem_limit: 70G
+        cpu_guarantee: 15
+        mem_guarantee: 50G
+        cmd: "start-singleuser.sh"
+    - display_name: Data Science (8 GPUs)
+      default: true
+      description: "GPU VMs with 8 GPUs (G5/G6/G6e 48x) | nvidia.com/gpu: 1 | Karpenter AutoScaling"
+      kubespawner_override:
+        # namespace: data-team-a
+        image: cschranz/gpu-jupyter:v1.6_cuda-11.8_ubuntu-22.04_python-only
+        node_selector:
+          karpenter.k8s.aws/instance-gpu-count: "8"
+        tolerations:
+          - key: "nvidia.com/gpu"
+            operator: "Exists"
+            effect: "NoSchedule"
+        extra_resource_limits:
+          nvidia.com/gpu: "8" # TIME-SLICING: Use a slice of GPU using time-slicing mode
+        cpu_limit: 70
+        mem_limit: 300G
+        cpu_guarantee: 50
+        mem_guarantee: 200G
         cmd: "start-singleuser.sh"
     # Karpenter doesn't support for requesting resources with MIG slices e.g., nvidia.com/mig-1g.5gb: 1,  or nvidia.com/mig-2g.20gb: 1 etc.
     # Hence, this profile relies on Managed node groups with GPU MIG enabled

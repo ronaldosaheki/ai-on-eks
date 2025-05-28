@@ -1,0 +1,12 @@
+#if S3 needs trailing in MODELPATH /
+export MODEL_PATH=Qwen/Qwen2.5-VL-32B-Instruct
+export AWS_S3_ENDPOINT_URL=https://s3.us-west-2.amazonaws.com
+export AWS_REGION=us-west-2
+export MODEL=qwen25-vl-32b-instruct
+export MODEL_ID=Qwen/Qwen2.5-VL-32B-Instruct
+export PARALLEL_SIZE=4
+export GPU_COUNT=4
+export MAX_MODEL_LEN=64600 #model max-seq-len 40960 g6 gpu 28624
+#vllm-openai ValueError: The model's max seq len (40960) is larger than the maximum number of tokens that can be stored in KV cache (28624). Try increasing `gpu_memory_utilization` or decreasing `max_model_len` when initializing the engine.
+export GPU_MEMORY_UTILIZATION=0.97
+export NODE_INSTANCE_TYPE=g6e.12xlarge

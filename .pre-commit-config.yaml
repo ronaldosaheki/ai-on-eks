@@ -31,7 +31,7 @@ repos:
           - --args=--only=terraform_unused_required_providers
           - --args=--only=terraform_workspace_remote
       - id: terraform_validate
-        exclude: (docs|modules)
+        exclude: (docs|modules|base|nvidia-triton-server)
   - repo: local
     hooks:
       - id: trufflehog

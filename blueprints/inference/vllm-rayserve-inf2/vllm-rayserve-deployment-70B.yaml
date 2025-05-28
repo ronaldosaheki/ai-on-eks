@@ -1,15 +1,15 @@
 #-------------------------------------------------------------------
 # Deployment instructions
 #-------------------------------------------------------------------
-# 
+#
 # Step 1: Deploy Base Infrastructure
 # git clone https://github.com/awslabs/ai-on-eks.git
 # cd ai-on-eks/infra/trainium-inferentia/ && ./install.sh
-# 
+#
 # Step 2: Deploy Llama-70B
 # cd ai-on-eks/blueprints/inference/vllm-rayserve-inf2
 # kubectl apply -f vllm-rayserve-deployment-70B.yaml
-# 
+#
 # Detailed Instructions can be found here:
 # https://awslabs.github.io/ai-on-eks/docs/blueprints/inference/Neuron/vllm-ray-inf2
 #
@@ -165,7 +165,7 @@ metadata:
 spec:
   serviceUnhealthySecondThreshold: 900
   deploymentUnhealthySecondThreshold: 300
-  # Note on setting TENSOR_PARALLELISM value: 
+  # Note on setting TENSOR_PARALLELISM value:
   # TENSOR_PARALLELISM controls how vLLM shards the model across available neuron cores.
   # The number of attention heads implemented by Llama-70b model (64) in this case,
   # has to be divisible by TENSOR_PARALLELISM (16). vLLM throws an error if its not divisible.

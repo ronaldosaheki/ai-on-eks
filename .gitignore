@@ -9,6 +9,18 @@ website/package-lock.json
 # Local .terraform directories
 **/.terraform/*
 
+**/trainium-inferentia/terraform/*
+**/nvidia-nim/terraform/*
+**/mlflow/terraform/*
+**/jupyterhub/terraform/*
+**/jark-stack/terraform/*
+**/emr-spark-rapids/terraform/*
+**/custom/terraform/*
+**/bionemo/terraform/*
+**/aibrix/terraform/*
+**/aibrix/.*
+
+
 # Terraform lockfile
 .terraform.lock.hcl
 

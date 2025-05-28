@@ -102,7 +102,8 @@ module "eks" {
       )
 
       # aws ssm get-parameters --names /aws/service/eks/optimized-ami/1.27/amazon-linux-2/recommended/image_id --region us-west-2
-      ami_type     = "AL2_x86_64" # Use this for Graviton AL2_ARM_64
+      #ami_type     = "AL2_x86_64" # Use this for Graviton AL2_ARM_64
+      ami_type     = "AL2023_x86_64_STANDARD"
       min_size     = 2
       max_size     = 8
       desired_size = 2
@@ -118,5 +119,266 @@ module "eks" {
         Name = "core-node-grp"
       })
     }
+
+
+    # GPU Nodegroup for JupyterHub Notebook and Ray Service
+    g6e-48xlarge-nodegrp = {
+      name        = "g6e-48xlarge-nodegrp"
+      description = "EKS Node Group to run GPU workloads"
+      # Filtering only Secondary CIDR private subnets starting with "100.".
+      # Subnet IDs where the nodes/node groups will be provisioned
+      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
+        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
+      )
+
+      #ami_type     = "AL2_x86_64_GPU"
+      ami_type     = "AL2023_x86_64_NVIDIA"
+      min_size     = 0
+      max_size     = 10
+      desired_size = 0
+
+      instance_types = ["g6e.48xlarge"]
+
+      labels = {
+        WorkerType    = "ON_DEMAND"
+        NodeGroupType = "g6e-gpu"
+      }
+
+      pre_bootstrap_user_data = <<-EOT
+        #!/usr/bin/env bash
+
+        # Mount instance store volumes in RAID-0 for kubelet and containerd
+        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0
+        /bin/setup-local-disks raid0
+      EOT
+
+      taints = {
+        gpu = {
+          key      = "nvidia.com/gpu"
+          effect   = "NO_SCHEDULE"
+          operator = "EXISTS"
+        }
+      }
+
+      tags = merge(local.tags, {
+        Name = "g6e-48xlarge-nodegrp"
+      })
+    }
+
+    g6e-12xlarge-nodegrp = {
+      name        = "g6e-12xlarge-nodegrp"
+      description = "EKS Node Group to run GPU workloads"
+      # Filtering only Secondary CIDR private subnets starting with "100.".
+      # Subnet IDs where the nodes/node groups will be provisioned
+      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
+        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
+      )
+
+      #ami_type     = "AL2_x86_64_GPU"
+      ami_type     = "AL2023_x86_64_NVIDIA"
+      min_size     = 0
+      max_size     = 10
+      desired_size = 0
+
+      instance_types = ["g6e.12xlarge"]
+
+      labels = {
+        WorkerType    = "ON_DEMAND"
+        NodeGroupType = "g6e-gpu"
+      }
+
+      pre_bootstrap_user_data = <<-EOT
+        #!/usr/bin/env bash
+
+        # Mount instance store volumes in RAID-0 for kubelet and containerd
+        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0
+        /bin/setup-local-disks raid0
+      EOT
+
+      taints = {
+        gpu = {
+          key      = "nvidia.com/gpu"
+          effect   = "NO_SCHEDULE"
+          operator = "EXISTS"
+        }
+      }
+
+      tags = merge(local.tags, {
+        Name = "g6e-12xlarge-nodegrp"
+      })
+    }
+
+    g6e-4xlarge-nodegrp = {
+      name        = "g6e-4xlarge-nodegrp"
+      description = "EKS Node Group to run GPU workloads"
+      # Filtering only Secondary CIDR private subnets starting with "100.".
+      # Subnet IDs where the nodes/node groups will be provisioned
+      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
+        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
+      )
+
+      #ami_type     = "AL2_x86_64_GPU"
+      ami_type     = "AL2023_x86_64_NVIDIA"
+      min_size     = 0
+      max_size     = 10
+      desired_size = 0
+
+      instance_types = ["g6e.4xlarge"]
+
+      labels = {
+        WorkerType    = "ON_DEMAND"
+        NodeGroupType = "g6e-gpu"
+      }
+
+      pre_bootstrap_user_data = <<-EOT
+        #!/usr/bin/env bash
+
+        # Mount instance store volumes in RAID-0 for kubelet and containerd
+        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0
+        /bin/setup-local-disks raid0
+      EOT
+
+      taints = {
+        gpu = {
+          key      = "nvidia.com/gpu"
+          effect   = "NO_SCHEDULE"
+          operator = "EXISTS"
+        }
+      }
+
+      tags = merge(local.tags, {
+        Name = "g6e-4xlarge-nodegrp"
+      })
+    }
+
+    g6-48xlarge-nodegrp = {
+      name        = "g6-48xlarge-nodegrp"
+      description = "EKS Node Group to run GPU workloads"
+      # Filtering only Secondary CIDR private subnets starting with "100.".
+      # Subnet IDs where the nodes/node groups will be provisioned
+      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
+        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
+      )
+
+      #ami_type     = "AL2_x86_64_GPU"
+      ami_type     = "AL2023_x86_64_NVIDIA"
+      min_size     = 0
+      max_size     = 10
+      desired_size = 0
+
+      instance_types = ["g6.48xlarge"]
+
+      labels = {
+        WorkerType    = "ON_DEMAND"
+        NodeGroupType = "g6-gpu"
+      }
+
+      pre_bootstrap_user_data = <<-EOT
+        #!/usr/bin/env bash
+
+        # Mount instance store volumes in RAID-0 for kubelet and containerd
+        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0
+        /bin/setup-local-disks raid0
+      EOT
+
+      taints = {
+        gpu = {
+          key      = "nvidia.com/gpu"
+          effect   = "NO_SCHEDULE"
+          operator = "EXISTS"
+        }
+      }
+
+      tags = merge(local.tags, {
+        Name = "g6-48xlarge-nodegrp"
+      })
+    }
+
+    g5-12xlarge-nodegrp = {
+      name        = "g5-gpu-node-grp"
+      description = "EKS Node Group to run GPU workloads"
+      # Filtering only Secondary CIDR private subnets starting with "100.".
+      # Subnet IDs where the nodes/node groups will be provisioned
+      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
+        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
+      )
+
+      #ami_type     = "AL2_x86_64_GPU"
+      ami_type     = "AL2023_x86_64_NVIDIA"
+      min_size     = 0
+      max_size     = 10
+      desired_size = 0
+
+      instance_types = ["g5.12xlarge"]
+
+      labels = {
+        WorkerType    = "ON_DEMAND"
+        NodeGroupType = "g5-12xlarge-nodegrp"
+      }
+
+      pre_bootstrap_user_data = <<-EOT
+        #!/usr/bin/env bash
+
+        # Mount instance store volumes in RAID-0 for kubelet and containerd
+        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0
+        /bin/setup-local-disks raid0
+      EOT
+
+      taints = {
+        gpu = {
+          key      = "nvidia.com/gpu"
+          effect   = "NO_SCHEDULE"
+          operator = "EXISTS"
+        }
+      }
+
+      tags = merge(local.tags, {
+        Name = "g5-12xlarge-nodegrp"
+      })
+    }
+
+    g5-4xlarge-nodegrp = {
+      name        = "g5-gpu-node-grp"
+      description = "EKS Node Group to run GPU workloads"
+      # Filtering only Secondary CIDR private subnets starting with "100.".
+      # Subnet IDs where the nodes/node groups will be provisioned
+      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
+        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
+      )
+
+      #ami_type     = "AL2_x86_64_GPU"
+      ami_type     = "AL2023_x86_64_NVIDIA"
+      min_size     = 0
+      max_size     = 10
+      desired_size = 0
+
+      instance_types = ["g5.4xlarge"]
+
+      labels = {
+        WorkerType    = "ON_DEMAND"
+        NodeGroupType = "g5-4xlarge-nodegrp"
+      }
+
+      pre_bootstrap_user_data = <<-EOT
+        #!/usr/bin/env bash
+
+        # Mount instance store volumes in RAID-0 for kubelet and containerd
+        # https://github.com/awslabs/amazon-eks-ami/blob/master/doc/USER_GUIDE.md#raid-0-for-kubelet-and-containerd-raid0
+        /bin/setup-local-disks raid0
+      EOT
+
+      taints = {
+        gpu = {
+          key      = "nvidia.com/gpu"
+          effect   = "NO_SCHEDULE"
+          operator = "EXISTS"
+        }
+      }
+
+      tags = merge(local.tags, {
+        Name = "g5-4xlarge-nodegrp"
+      })
+    }
+
   }
 }

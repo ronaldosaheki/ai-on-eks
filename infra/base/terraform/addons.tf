@@ -370,7 +370,8 @@ module "data_addons" {
       name: g6e-gpu-karpenter
       clusterName: ${module.eks.cluster_name}
       ec2NodeClass:
-        amiFamily: Bottlerocket
+        amiSelectorTerms:
+        - alias: al2023@latest
         karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
         subnetSelectorTerms:
           id: ${module.vpc.private_subnets[2]}
@@ -425,7 +426,8 @@ module "data_addons" {
       name: g6-gpu-karpenter
       clusterName: ${module.eks.cluster_name}
       ec2NodeClass:
-        amiFamily: Bottlerocket
+        amiSelectorTerms:
+        - alias: al2023@latest
         karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
         subnetSelectorTerms:
           id: ${module.vpc.private_subnets[2]}
@@ -480,7 +482,8 @@ module "data_addons" {
       name: g5-gpu-karpenter
       clusterName: ${module.eks.cluster_name}
       ec2NodeClass:
-        amiFamily: Bottlerocket
+        amiSelectorTerms:
+        - alias: al2023@latest
         karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
         subnetSelectorTerms:
           id: ${module.vpc.private_subnets[2]}
@@ -542,7 +545,8 @@ module "data_addons" {
       name: x86-cpu-karpenter
       clusterName: ${module.eks.cluster_name}
       ec2NodeClass:
-        amiFamily: Bottlerocket
+        amiSelectorTerms:
+        - alias: al2023@latest
         karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
         subnetSelectorTerms:
           id: ${module.vpc.private_subnets[3]}
@@ -598,7 +602,7 @@ module "data_addons" {
       clusterName: ${module.eks.cluster_name}
       ec2NodeClass:
         amiSelectorTerms:
-          - alias: bottlerocket@latest
+        - alias: al2023@latest
         karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
         subnetSelectorTerms:
           id: ${module.vpc.private_subnets[2]}
@@ -657,7 +661,7 @@ module "data_addons" {
       clusterName: ${module.eks.cluster_name}
       ec2NodeClass:
         amiSelectorTerms:
-          - alias: bottlerocket@latest
+        - alias: al2023@latest
         karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
         subnetSelectorTerms:
           id: ${module.vpc.private_subnets[2]}
