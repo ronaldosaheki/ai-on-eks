@@ -22,6 +22,18 @@ variable "capacity_block_reservation_id" {
   type        = string
 }
 
+variable "solution_description" {
+  description = "Description of the solution"
+  default     = null
+  type        = string
+}
+
+variable "solution_id" {
+  description = "ID of the solution"
+  default     = null
+  type        = string
+}
+
 # VPC with configurable AZs - CIDR size should match AZ count
 variable "vpc_cidr" {
   description = "VPC CIDR. This should be a valid private (RFC 1918) CIDR range. Recommended: /21 for 2 AZs, /20 for 3 AZs, /19 for 4 AZs. If the network prefix is not provided, it will be computed"
@@ -237,6 +249,12 @@ variable "aibrix_stack_version" {
   description = "AIBrix default version"
   type        = string
   default     = "v0.2.1"
+}
+
+variable "enable_leader_worker_set" {
+  description = "Flag to enable the LeaderWorkerSet"
+  type        = bool
+  default     = false
 }
 
 # Enable NVIDIA DRA Driver addon
