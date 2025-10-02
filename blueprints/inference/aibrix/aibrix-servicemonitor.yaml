@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aibrix-vllm-metrics
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobLabel: aibrix-vllm
+  namespaceSelector:
+    matchNames:
+      - aibrix
+      - deepseek-aibrix
+  selector:
+    matchLabels:
+      prometheus-discovery: "true"
+  endpoints:
+    - port: serve
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
