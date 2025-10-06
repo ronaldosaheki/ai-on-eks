@@ -300,66 +300,6 @@ module "data_addons" {
   #---------------------------------------------------------------
   enable_karpenter_resources = true
   karpenter_resources_helm_config = {
-    p5-gpu-karpenter = {
-      values = [
-        <<-EOT
-      name: p5-gpu-karpenter
-      clusterName: ${module.eks.cluster_name}
-      ec2NodeClass:
-        amiFamily: AL2023
-        amiSelectorTerms:
-        - alias: al2023@latest
-        karpenterRole: ${split("/", module.eks_blueprints_addons.karpenter.node_iam_role_arn)[1]}
-        subnetSelectorTerms:
-          tags:
-            karpenter.sh/discovery: "${module.eks.cluster_name}"
-            Name: "${module.eks.cluster_name}-private-secondary*" # Only seconddary cidr subnets
-        securityGroupSelectorTerms:
-          tags:
-            Name: ${module.eks.cluster_name}-node
-        instanceStorePolicy: RAID0
-        blockDeviceMappings:
-          # Root device
-          - deviceName: /dev/xvda
-            ebs:
-              volumeSize: 50Gi
-              volumeType: gp3
-              encrypted: true
-
-      nodePool:
-        labels:
-          - instanceType: p5-gpu-karpenter
-          - type: karpenter
-          - gpuType: h100
-          - accelerator: nvidia
-        taints:
-          - key: nvidia.com/gpu
-            value: "Exists"
-            effect: "NoSchedule"
-        requirements:
-          - key: "karpenter.k8s.aws/instance-family"
-            operator: In
-            values: ["p5"]
-          - key: "karpenter.k8s.aws/instance-size"
-            operator: In
-            values: [ "48xlarge" ]
-          - key: "kubernetes.io/arch"
-            operator: In
-            values: ["amd64"]
-          - key: "karpenter.sh/capacity-type"
-            operator: In
-            values: ["reserved"]
-        limits:
-           cpu: 200000
-           memory: 2000Gi
-        disruption:
-          consolidationPolicy: WhenEmpty
-          consolidateAfter: 300s
-          expireAfter: 720h
-        weight: 100
-      EOT
-      ]
-    }
     g6-gpu-karpenter = {
       values = [
         <<-EOT

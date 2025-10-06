@@ -1,17 +1,7 @@
-name                             = "aibrix-on-eks"
-enable_aibrix_stack              = true
-enable_argocd                    = true
-enable_ai_ml_observability_stack = true
-region                           = "eu-west-2" # has more p5.48xlarge capacity blocks available
-availability_zones_count         = 3           #change to match capacity block
-
-# -------------------------------------------------------------------------------------
-# Enable this to NVIDIA K8s DRA Driver with NVIDIA GPU Opeator
-#   Check infra/base/terraform/variables.tf for more details
-# -------------------------------------------------------------------------------------
-# enable_nvidia_dra_driver         = true
-enable_nvidia_gpu_operator = true
-# -------------------------------------------------------------------------------------
+name                = "aibrix-on-eks"
+enable_aibrix_stack = true
+enable_argocd       = true
+# region              = "us-west-2"
 # eks_cluster_version = "1.33"
 
 # -------------------------------------------------------------------------------------
@@ -26,13 +16,13 @@ enable_nvidia_gpu_operator = true
 #
 # -------------------------------------------------------------------------------------
 
-enable_cluster_addons = {
-  coredns                         = true
-  kube-proxy                      = true
-  vpc-cni                         = true
-  eks-pod-identity-agent          = true
-  aws-ebs-csi-driver              = true
-  metrics-server                  = true
-  eks-node-monitoring-agent       = false
-  amazon-cloudwatch-observability = false
-}
+# enable_cluster_addons = {
+#   coredns                         = true
+#   kube-proxy                      = true
+#   vpc-cni                         = true
+#   eks-pod-identity-agent          = true
+#   aws-ebs-csi-driver              = true
+#   metrics-server                  = true
+#   eks-node-monitoring-agent       = false
+#   amazon-cloudwatch-observability = true
+# }
