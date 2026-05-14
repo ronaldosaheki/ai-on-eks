@@ -54,6 +54,9 @@ resource "kubectl_manifest" "mistral_model_download" {
 
               print("Upload complete!")
               EOF
+            env:
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
             resources:
               requests:
                 memory: "4Gi"

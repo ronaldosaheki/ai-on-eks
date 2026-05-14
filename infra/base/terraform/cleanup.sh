@@ -29,6 +29,28 @@ else
 fi
 
 
+# Drain nodes before terraform destroy. Terraform deletes VPC routes concurrently
+# with EKS cluster deletion, which can strand nodes without network connectivity.
+echo "Draining nodes before terraform destroy..."
+if [[ ! $(cat $TMPFILE) == *"No outputs found"* ]]; then
+  # For Auto Mode clusters: disable built-in nodepools via EKS API
+  AUTOMODE=$(terraform output -raw enable_eks_auto_mode 2>/dev/null || echo "false")
+  if [[ "$AUTOMODE" == "true" ]]; then
+    echo "Disabling built-in nodepools via EKS API..."
+    aws eks update-cluster-config \
+      --name "$CLUSTERNAME" \
+      --region "$REGION" \
+      --compute-config '{"enabled":true,"nodePools":[]}' || echo "WARNING: Failed to disable built-in nodepools"
+    echo "Waiting for cluster update to complete..."
+    aws eks wait cluster-active --name "$CLUSTERNAME" --region "$REGION" || echo "WARNING: Wait timed out"
+  fi
+
+  # Delete all nodepools (covers both Karpenter and any remaining Auto Mode pools)
+  echo "Deleting all nodepools..."
+  kubectl delete nodepool --all --wait=true --timeout=300s 2>/dev/null || echo "WARNING: No nodepools found or delete failed"
+  echo "Node drain complete"
+fi
+
 # List of Terraform modules to destroy in sequence
 targets=($(terraform state list | grep "kubectl_manifest\." | grep -v "kubectl_manifest.aws_load_balancer_controller"))
 
