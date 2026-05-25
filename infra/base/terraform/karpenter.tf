@@ -12,6 +12,9 @@ module "karpenter" {
   node_iam_role_name              = "karpenterNode-${local.name}"
   create_pod_identity_association = true
 
+  # Managed policy exceeds 6144 chars for longer cluster names; inline allows 10240
+  enable_inline_policy = true
+
   # Used to attach additional IAM policies to the Karpenter node IAM role
   node_iam_role_additional_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
