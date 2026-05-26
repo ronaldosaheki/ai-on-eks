@@ -41,3 +41,9 @@ kubeletPlugin:
     - key: "nvidia.com/gpu"
       operator: Exists
       effect: NoSchedule
+
+featureGates:
+  TimeSlicingSettings: true
+  MPSSupport: true   # g6 examples; mutually exclusive with DynamicMIG in driver v25.12.0
+  # DynamicMIG: false (default) — JARK MIG uses GPU Operator static partitions on p4de;
+  # DRA advertises existing MIG slices via mig.nvidia.com (do not enable with MPSSupport).

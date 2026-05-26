@@ -172,6 +172,7 @@ spec:
   nodeSelector:
     node.kubernetes.io/instance-type: p4de.24xlarge
     nvidia.com/gpu.present: "true"
+    nvidia.com/mig.config: p4de-half-balanced
   tolerations:
   - key: nvidia.com/gpu
     operator: Exists
@@ -210,6 +211,7 @@ spec:
   nodeSelector:
     node.kubernetes.io/instance-type: p4de.24xlarge
     nvidia.com/gpu.present: "true"
+    nvidia.com/mig.config: p4de-half-balanced
   tolerations:
   - key: nvidia.com/gpu
     operator: Exists
@@ -248,6 +250,7 @@ spec:
   nodeSelector:
     node.kubernetes.io/instance-type: p4de.24xlarge
     nvidia.com/gpu.present: "true"
+    nvidia.com/mig.config: p4de-half-balanced
   tolerations:
   - key: nvidia.com/gpu
     operator: Exists
