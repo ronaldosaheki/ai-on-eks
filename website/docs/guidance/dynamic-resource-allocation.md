@@ -1250,6 +1250,20 @@ Multi-Instance GPU (MIG) is a hardware-level GPU partitioning technology availab
 
 ### How to Deploy MIG with DRA
 
+#### Static MIG (JARK default — no `DynamicMIG`)
+
+JARK uses **GPU Operator MIG Manager** to cut **fixed** MIG profiles on `p4de` nodes (`p4de-half-balanced` in `nvidia-gpu-operator.yaml`). The NVIDIA DRA driver (**v25.12.0**, `DynamicMIG` **off**) **discovers** those slices and exposes them as `mig.nvidia.com` in **ResourceSlices**. Pods claim them with `deviceClassName: mig.nvidia.com` and a **profile** selector (for example `1g.10gb`).
+
+| Layer | Role |
+|-------|------|
+| **GPU Operator** | Creates MIG geometry on the node (`nvidia.com/mig.config` label) |
+| **DRA driver** | Schedules and prepares **existing** MIG devices (`featureGates.DynamicMIG` **not** set) |
+| **Workload** | `ResourceClaimTemplate` + `mig.nvidia.com` + CEL `profile` match |
+
+Do **not** enable `featureGates.DynamicMIG` on JARK unless you move to **H100+** and accept alpha limitations (conflicts with `MPSSupport` on the same chart, and conflicts with GPU Operator MIG Manager on the same GPUs).
+
+**Prerequisites:** `p4de.24xlarge` Capacity Block node (`capacity_block_reservation_id` in Terraform), `enable_nvidia_gpu_operator = true`, MIG node label `nvidia.com/mig.config=p4de-half-balanced`.
+
 <Tabs groupId="mig-config">
 <TabItem value="template" label="ResourceClaimTemplate">
 
@@ -1281,10 +1295,9 @@ kubectl get pods -n mig-gpu -w
 - Compliance scenarios requiring hardware-level isolation
 
 :::warning MIG Requirements
-- Hardware-level partitioning creates isolated GPU instances
-- Each MIG instance has dedicated compute units and memory
-- Complete fault isolation between instances
-- Requires GPU Operator with MIG Manager for dynamic reconfiguration
+- **Hardware:** A100 80GB (`p4de.24xlarge`) or other MIG-capable GPU — not L4/g6.
+- **Partitioning:** GPU Operator MIG Manager (static profile); DRA does not reshape MIG when `DynamicMIG` is disabled.
+- **Profiles in examples** (`1g.10gb`, `2g.20gb`, `3g.40gb`) must match the node's `p4de-half-balanced` config on GPUs 0–3.
 :::
 
 </TabItem>
