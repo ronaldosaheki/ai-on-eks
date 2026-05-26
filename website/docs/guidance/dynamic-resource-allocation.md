@@ -1060,7 +1060,8 @@ Both pods set `resourceClaimName: shared-timeslicing-gpu`. The claim stays **pen
 ```bash title="Deploy Time-Slicing GPU Sharing"
 kubectl apply -f timeslicing-claim.yaml
 kubectl apply -f timeslicing-pod.yaml
-kubectl get resourceclaim,pods -n timeslicing-gpu -w
+kubectl get pods -n timeslicing-gpu -w
+# In another terminal: kubectl get resourceclaim -n timeslicing-gpu -w
 ```
 
 **Best For:**
@@ -1118,6 +1119,104 @@ kubectl apply -f mps-claim-template.yaml
 kubectl apply -f mps-pod.yaml
 kubectl get pods -n mps-gpu -w
 ```
+
+### Verify MPS deployment
+
+After the pod is **Running**, confirm the claim uses **MPS**, the MPS control daemon is up, both containers see the GPU, and `nvidia-smi` shows an **M+C** (MPS client) process.
+
+**1. Pod and ResourceClaim**
+
+```bash
+kubectl get pods,resourceclaim -n mps-gpu
+```
+
+Example output (JARK, `g6-mng` node):
+
+```text
+NAME                          READY   STATUS    RESTARTS   AGE
+pod/mps-multi-container-pod   2/2     Running   0          7m
+
+NAME                                                                           STATE                AGE
+resourceclaim.resource.k8s.io/mps-multi-container-pod-shared-gpu-claim-6sm2k   allocated,reserved   7m
+```
+
+**2. Device and sharing strategy**
+
+```bash
+kubectl get resourceclaim -n mps-gpu -o json | jq -r '
+  "device=\(.items[0].status.allocation.devices.results[0].device // "n/a")",
+  "sharing=\(.items[0].status.allocation.devices.config[0].opaque.parameters.sharing.strategy // "n/a")"
+'
+```
+
+Example output:
+
+```text
+device=gpu-0
+sharing=MPS
+```
+
+**3. MPS control daemon (requires `MPSSupport: true` on the DRA driver)**
+
+```bash
+kubectl get pods -n nvidia-dra-driver-gpu | grep mps
+```
+
+Example output:
+
+```text
+mps-control-daemon-445ccb5d-e0c0-471f-b88a-ff21c8cdf269-c3t854h   1/1     Running   0          7m
+```
+
+**4. CUDA in both containers**
+
+```bash
+kubectl exec -n mps-gpu mps-multi-container-pod -c inference-container -- \
+  python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+kubectl exec -n mps-gpu mps-multi-container-pod -c training-container -- \
+  python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+```
+
+Example output (both containers):
+
+```text
+True NVIDIA L4
+True NVIDIA L4
+```
+
+**5. Workload processes**
+
+```bash
+kubectl exec -n mps-gpu mps-multi-container-pod -c inference-container -- ps aux | grep python
+kubectl exec -n mps-gpu mps-multi-container-pod -c training-container -- ps aux | grep python
+```
+
+Example output:
+
+```text
+root  1  ... python /scripts/inference-script.py
+root  1  ... python /scripts/training-script.py
+```
+
+**6. GPU usage and MPS client (`M+C`) in `nvidia-smi`**
+
+```bash
+kubectl exec -n mps-gpu mps-multi-container-pod -c training-container -- nvidia-smi
+```
+
+Example output (note **Type `M+C`** = MPS client, non-zero memory, `python` under Processes):
+
+```text
+|   0  NVIDIA L4                      On  |   00000000:35:00.0 Off |                    0 |
+| N/A   49C    P0             34W /   72W |     603MiB /  23034MiB |      0%   E. Process |
+...
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|    0   N/A  N/A               1    M+C   python                                  316MiB |
+```
+
+:::note
+`nvidia-smi` from inside one container may list only that container’s process. Confirm both workloads with step 5. Example scripts buffer stdout, so `kubectl logs` can appear empty even when MPS is active.
+:::
 
 **Best For:**
 - Multiple small inference workloads
