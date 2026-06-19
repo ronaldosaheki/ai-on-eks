@@ -99,6 +99,9 @@ module "eks" {
   create_security_group      = false
   create_node_security_group = false
 
+  # Required at cluster level for EFA security group rules on managed node groups
+  enable_efa_support = true
+
   eks_managed_node_groups = merge({
     #  It's recommended to have a Managed Node group for hosting critical add-ons
     #  It's recommended to use Karpenter to place your workloads instead of using Managed Node groups
@@ -152,15 +155,16 @@ module "eks" {
     nvidia-gpu = {
       create         = !var.enable_eks_auto_mode
       ami_type       = "AL2023_x86_64_NVIDIA"
-      instance_types = ["g6.4xlarge"] # Use p4d for testing MIG
+      #instance_types = ["g6.4xlarge"] # cheaper no MIG
+      instance_types = ["p4de.24xlarge"] # Use p4d for testing MIG
       subnet_ids     = local.secondary_cidr_subnets
       iam_role_additional_policies = {
         # Not required, but used in the example to access the nodes to inspect mounted volumes
         AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       }
-      # Add security group rules on the node group security group to
-      # allow EFA traffic
-      enable_efa_support = true
+      # EFA for multi-node NCCL/MPI; not supported on g6 — only p4/p5 families
+      enable_efa_support                    = true
+      attach_cluster_primary_security_group = true
       node_repair_config = {
         enabled = true
       }
@@ -193,14 +197,16 @@ module "eks" {
       ]
 
       labels = {
-        NodeGroupType            = "g6-mng"
-        "nvidia.com/gpu.present" = "true"
-        "accelerator"            = "nvidia"
-        "amiFamily"              = "al2023"
+        NodeGroupType                   = "g6-mng"
+        "nvidia.com/gpu.present"        = "true"
+        "accelerator"                   = "nvidia"
+        "nvidia.com/mig.config"         = "p4de-half-balanced"
+        "vpc.amazonaws.com/efa.present" = "true"
+        "amiFamily"                     = "al2023"
       }
 
       min_size     = 0
-      max_size     = 1
+      max_size     = 4
       desired_size = 0
 
       taints = {
@@ -223,9 +229,8 @@ module "eks" {
         # Not required, but used in the example to access the nodes to inspect mounted volumes
         AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       }
-      # Add security group rules on the node group security group to
-      # allow EFA traffic
-      enable_efa_support = true
+      enable_efa_support                    = true
+      attach_cluster_primary_security_group = true
       node_repair_config = {
         enabled = true
       }
@@ -260,11 +265,7 @@ module "eks" {
       max_size     = 1
       desired_size = 0
 
-      # This will:
-      # 1. Create a placement group to place the instances close to one another
-      # 2. Ignore subnets that reside in AZs that do not support the instance type
-      # 3. Expose all of the available EFA interfaces on the launch template
-      enable_efa_support = true
+      # Creates a placement group, filters unsupported AZs, and exposes EFA interfaces on the launch template
 
       # NOTE: "nvidia.com/mig.config" label is required for MIG support to match with the MIG profile.
       # Check mig profiel config in infra/base/terraform/argocd-addons/nvidia-gpu-operator.yaml

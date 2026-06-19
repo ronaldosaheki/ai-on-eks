@@ -1,3 +1,5 @@
+# Static MIG via GPU Operator (p4de-half-balanced) + DRA mig.nvidia.com claims.
+# Do not enable featureGates.DynamicMIG on the DRA driver for this pattern.
 apiVersion: v1
 kind: Namespace
 metadata:
